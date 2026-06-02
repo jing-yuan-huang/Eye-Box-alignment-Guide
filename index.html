@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eye-Box Alignment Guide Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { background: #ffffff; }
+
+:root {
+  --green: #00CC33;
+  --green-dim: rgba(0,180,50,0.12);
+  --green-mid: rgba(0,180,50,0.4);
+  --bg: #ffffff;
+  --surface: #f5f5f5;
+  --surface2: #eeeeee;
+  --border: rgba(0,0,0,0.1);
+  --text: #111111;
+  --text-dim: #888888;
+  --mono: 'Space Mono', monospace;
+  --sans: 'Noto Sans TC', sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  grid-template-rows: auto 1fr;
+}
+
+/* ── Header ── */
+header {
+  grid-column: 1 / -1;
+  padding: 20px 32px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+header h1 {
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--green);
+}
+header p {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+}
+
+/* ── Sidebar ── */
+aside {
+  padding: 28px 24px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  overflow-y: auto;
+}
+
+.section-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+
+/* Input fields */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.field label {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+}
+.field-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+input[type=number] {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 14px;
+  padding: 8px 12px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s;
+}
+input[type=number]:focus {
+  border-color: var(--green-mid);
+}
+input[type=number]::-webkit-inner-spin-button { opacity: 0.3; }
+.field-unit {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+.field-sep {
+  font-family: var(--mono);
+  font-size: 16px;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+/* Presets */
+.presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.preset-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 5px 9px;
+  cursor: pointer;
+  transition: all 0.12s;
+  letter-spacing: 0.04em;
+}
+.preset-btn:hover { border-color: var(--green-mid); color: var(--text); }
+.preset-btn.active { border-color: var(--green); color: var(--green); background: rgba(0,255,65,0.06); }
+
+/* Stats */
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.stat {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+}
+.stat-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.stat-value {
+  font-family: var(--mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--green);
+}
+.stat-sub {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+/* Export buttons */
+.export-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.export-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 11px 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.export-btn:hover {
+  border-color: var(--green);
+  color: var(--green);
+  background: rgba(0,255,65,0.04);
+}
+.export-btn .icon {
+  font-size: 14px;
+  opacity: 0.6;
+}
+
+/* ── Preview area ── */
+main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background: #f0f0f0;
+  position: relative;
+}
+.canvas-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+#preview-canvas {
+  max-width: 100%;
+  max-height: calc(100vh - 120px);
+  display: block;
+}
+.canvas-info {
+  position: absolute;
+  bottom: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Eye-Box Alignment Guide</h1>
+  <p>Waveguide AR Glasses · Corner Indicator Generator</p>
+</header>
+
+<aside>
+  <!-- Dimensions -->
+  <div>
+    <p class="section-title">Canvas Size</p>
+    <div class="field">
+      <label>WIDTH × HEIGHT</label>
+      <div class="field-row">
+        <input type="number" id="inp-w" value="1920" min="320" max="7680" step="1">
+        <span class="field-sep">×</span>
+        <input type="number" id="inp-h" value="1080" min="240" max="4320" step="1">
+        <span class="field-unit">px</span>
+      </div>
+    </div>
+    <div class="presets" id="presets">
+      <button class="preset-btn active" onclick="setSize(1920,1080)">1920×1080</button>
+      <button class="preset-btn" onclick="setSize(2560,1440)">2560×1440</button>
+      <button class="preset-btn" onclick="setSize(3840,2160)">3840×2160</button>
+      <button class="preset-btn" onclick="setSize(1280,720)">1280×720</button>
+      <button class="preset-btn" onclick="setSize(2560,1080)">2560×1080</button>
+      <button class="preset-btn" onclick="setSize(1024,1024)">1024×1024</button>
+      <button class="preset-btn" onclick="setSize(640,480)">640×480</button>
+      <button class="preset-btn" onclick="setSize(380,500)">380×500</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div>
+    <p class="section-title">Computed Values</p>
+    <div class="stats">
+      <div class="stat">
+        <p class="stat-label">min(W,H)</p>
+        <p class="stat-value" id="s-min">1080</p>
+        <p class="stat-sub">px</p>
+      </div>
+      <div class="stat">
+        <p class="stat-label">Ratio</p>
+        <p class="stat-value" id="s-ratio">16:9</p>
+        <p class="stat-sub">aspect</p>
+      </div>
+      <div class="stat">
+        <p class="stat-label">S = min×0.12</p>
+        <p class="stat-value" id="s-s">130</p>
+        <p class="stat-sub">icon size px</p>
+      </div>
+      <div class="stat">
+        <p class="stat-label">M = min×0.03</p>
+        <p class="stat-value" id="s-m">32</p>
+        <p class="stat-sub">margin px</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export -->
+  <div>
+    <p class="section-title">Export</p>
+    <div class="export-group">
+      <button class="export-btn" onclick="exportSVG()">
+        <span>Download SVG</span>
+        <span class="icon">↓</span>
+      </button>
+      <button class="export-btn" onclick="exportPNG()">
+        <span>Download PNG</span>
+        <span class="icon">↓</span>
+      </button>
+    </div>
+  </div>
+</aside>
+
+<main>
+  <div class="canvas-wrap">
+    <canvas id="preview-canvas"></canvas>
+    <p class="canvas-info" id="canvas-info">1920 × 1080 px</p>
+  </div>
+</main>
+
+<script>
+const inpW = document.getElementById('inp-w');
+const inpH = document.getElementById('inp-h');
+const cv   = document.getElementById('preview-canvas');
+const ctx  = cv.getContext('2d');
+
+function gcd(a,b){ return b===0?a:gcd(b,a%b); }
+
+function setSize(w,h){
+  inpW.value=w; inpH.value=h; update();
+}
+
+function updatePresetBtns(){
+  const W=parseInt(inpW.value), H=parseInt(inpH.value);
+  document.querySelectorAll('.preset-btn').forEach(btn=>{
+    const t=btn.textContent.split('×');
+    btn.classList.toggle('active', parseInt(t[0])===W && parseInt(t[1])===H);
+  });
+}
+
+// Core drawing params from W,H
+function params(W,H){
+  const minWH = Math.min(W,H);
+  const S = Math.max(48, Math.round(minWH * 0.12));
+  const M = Math.round(minWH * 0.03);
+  return { S, M };
+}
+
+function update(){
+  const W = Math.max(320, Math.min(7680, parseInt(inpW.value)||1920));
+  const H = Math.max(240, Math.min(4320, parseInt(inpH.value)||1080));
+  inpW.value=W; inpH.value=H;
+  updatePresetBtns();
+
+  const minWH=Math.min(W,H);
+  const {S,M}=params(W,H);
+  const g=gcd(W,H), rw=W/g, rh=H/g, rg=gcd(rw,rh);
+
+  document.getElementById('s-min').textContent=minWH;
+  document.getElementById('s-ratio').textContent=(rw/rg)+':'+(rh/rg);
+  document.getElementById('s-s').textContent=S;
+  document.getElementById('s-m').textContent=M;
+  document.getElementById('canvas-info').textContent=`${W} × ${H} px`;
+
+  drawPreview(W,H,S,M);
+}
+
+function drawPreview(W,H,S,M){
+  const dpr = window.devicePixelRatio||1;
+  const wrap = cv.parentElement;
+  const maxW = wrap.clientWidth - 0;
+  const maxH = wrap.clientHeight - 40;
+  const scale = Math.min(maxW/W, maxH/H, 1);
+  const pw = Math.round(W*scale);
+  const ph = Math.round(H*scale);
+
+  cv.width  = pw * dpr;
+  cv.height = ph * dpr;
+  cv.style.width  = pw + 'px';
+  cv.style.height = ph + 'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+
+  drawScene(ctx, pw, ph, S*scale, M*scale*2.2, Math.max(1.5, S*scale*0.1)*2);
+}
+
+function drawScene(c, w, h, ss, ms, lw){
+  const GREEN = '#00FF41';
+  const gap = ss * 0.58;
+
+  c.fillStyle = '#0a0a0a';
+  c.fillRect(0,0,w,h);
+
+  // dashed eye-box boundary
+  c.strokeStyle = 'rgba(0,255,65,0.2)';
+  c.setLineDash([4,3]); c.lineWidth=0.8;
+  c.strokeRect(ms, ms, w-ms*2, h-ms*2);
+  c.setLineDash([]);
+
+  function corner(ax,ay,flipX,flipY){
+    const cx=flipX?ax+ss:ax, cy=flipY?ay+ss:ay;
+    const ex=flipX?ax:ax+ss, ey=flipY?ay:ay+ss;
+
+    c.strokeStyle=GREEN; c.lineWidth=lw;
+    c.lineCap='square'; c.lineJoin='miter';
+    c.beginPath(); c.moveTo(ex,cy); c.lineTo(cx,cy); c.lineTo(cx,ey); c.stroke();
+
+    const startX=flipX?cx-ss*0.98:cx+ss*0.98;
+    const startY=flipY?cy-ss*0.98:cy+ss*0.98;
+    const dx=cx-startX, dy=cy-startY;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    const nx=dx/dist, ny=dy/dist;
+    const px=-ny, py=nx;
+    const tipX=cx-nx*gap, tipY=cy-ny*gap;
+
+    c.lineCap='butt'; c.lineJoin='miter';
+    c.beginPath(); c.moveTo(startX,startY); c.lineTo(tipX,tipY); c.stroke();
+
+    const wingLen=lw*1.4;
+    c.lineCap='square';
+    c.beginPath();
+    c.moveTo(tipX-nx*wingLen+px*wingLen, tipY-ny*wingLen+py*wingLen);
+    c.lineTo(tipX,tipY);
+    c.lineTo(tipX-nx*wingLen-px*wingLen, tipY-ny*wingLen-py*wingLen);
+    c.stroke();
+  }
+
+  corner(ms,     ms,     false, false);
+  corner(w-ms-ss,ms,     true,  false);
+  corner(ms,     h-ms-ss,false, true);
+  corner(w-ms-ss,h-ms-ss,true,  true);
+}
+
+// ── SVG export ──
+function buildSVG(W,H){
+  const {S,M} = params(W,H);
+  const ms = M * 2.2;
+  const ss = S;
+  const lw = Math.max(1.5, ss*0.1)*2;
+  const gap = ss*0.58;
+  const GREEN = '#00FF41';
+
+  function cornerSVG(ax,ay,flipX,flipY){
+    const cx=flipX?ax+ss:ax, cy=flipY?ay+ss:ay;
+    const ex=flipX?ax:ax+ss, ey=flipY?ay:ay+ss;
+
+    const startX=flipX?cx-ss*0.98:cx+ss*0.98;
+    const startY=flipY?cy-ss*0.98:cy+ss*0.98;
+    const dx=cx-startX, dy=cy-startY;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    const nx=dx/dist, ny=dy/dist;
+    const px=-ny, py=nx;
+    const tipX=cx-nx*gap, tipY=cy-ny*gap;
+    const wingLen=lw*1.4;
+    const w1x=tipX-nx*wingLen+px*wingLen, w1y=tipY-ny*wingLen+py*wingLen;
+    const w2x=tipX-nx*wingLen-px*wingLen, w2y=tipY-ny*wingLen-py*wingLen;
+
+    const r = (n)=>Math.round(n*100)/100;
+    return `
+  <polyline points="${r(ex)},${r(cy)} ${r(cx)},${r(cy)} ${r(cx)},${r(ey)}"
+    fill="none" stroke="${GREEN}" stroke-width="${r(lw)}" stroke-linecap="square" stroke-linejoin="miter"/>
+  <line x1="${r(startX)}" y1="${r(startY)}" x2="${r(tipX)}" y2="${r(tipY)}"
+    stroke="${GREEN}" stroke-width="${r(lw)}" stroke-linecap="butt"/>
+  <polyline points="${r(w1x)},${r(w1y)} ${r(tipX)},${r(tipY)} ${r(w2x)},${r(w2y)}"
+    fill="none" stroke="${GREEN}" stroke-width="${r(lw)}" stroke-linecap="square" stroke-linejoin="miter"/>`;
+  }
+
+  const db = `${ms},${ms} ${W-ms},${ms} ${W-ms},${H-ms} ${ms},${H-ms}`;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+  <rect width="${W}" height="${H}" fill="#0a0a0a"/>
+  <polyline points="${db}" fill="none" stroke="rgba(0,255,65,0.2)" stroke-width="0.8" stroke-dasharray="4 3"/>
+  ${cornerSVG(ms,     ms,     false, false)}
+  ${cornerSVG(W-ms-ss,ms,     true,  false)}
+  ${cornerSVG(ms,     H-ms-ss,false, true)}
+  ${cornerSVG(W-ms-ss,H-ms-ss,true,  true)}
+</svg>`;
+}
+
+function exportSVG(){
+  const W=parseInt(inpW.value), H=parseInt(inpH.value);
+  const svg = buildSVG(W,H);
+  const blob = new Blob([svg], {type:'image/svg+xml'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `eyebox-guide-${W}x${H}.svg`;
+  a.click();
+}
+
+function exportPNG(){
+  const W=parseInt(inpW.value), H=parseInt(inpH.value);
+  const {S,M}=params(W,H);
+  const offscreen = document.createElement('canvas');
+  offscreen.width=W; offscreen.height=H;
+  const oc=offscreen.getContext('2d');
+  drawScene(oc, W, H, S, M*2.2, Math.max(1.5,S*0.1)*2);
+  const a=document.createElement('a');
+  a.href=offscreen.toDataURL('image/png');
+  a.download=`eyebox-guide-${W}x${H}.png`;
+  a.click();
+}
+
+// Events
+inpW.addEventListener('input', update);
+inpH.addEventListener('input', update);
+inpW.addEventListener('change', update);
+inpH.addEventListener('change', update);
+window.addEventListener('resize', ()=>update());
+update();
+</script>
+</body>
+</html>
