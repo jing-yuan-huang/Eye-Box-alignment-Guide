@@ -77,12 +77,5 @@ README.md    ← this file
 
 ---
 
-## Background
-
-This tool was developed as part of a Taiwan patent application for a waveguide AR glasses eye-box calibration interface. The corner indicators provide intuitive visual feedback: when all four arrows are fully visible, the user's eye is correctly positioned within the Eye Box.
-
----
-
-## License
 
 MIT
